@@ -1,0 +1,86 @@
+---
+title: "R markdown"
+output:
+  html_document:
+    theme: united
+    toc: true
+    number_sections: false
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+---
+```
+eval: how are you.
+```
+
+```{r echo=FALSE, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+library(knitr)
+library(kableExtra)
+library(dplyr)
+library(formatters)
+library(plotly)
+library(pharmaverseadam)
+library(DT)
+```
+
+# M1234 Analysis
+<!-- # M1234 Analysis ctrl+shift+C-->
+
+## Information
+**Study **:12345  
+**Indication**: Cancer  
+**Start date**: 08^th^ Nov 2024~DSUR~   
+~~AE Special interest information~~
+
+## *Image loading*
+<div style ="text-align: center;">
+----This is the image---  
+![fig Image of Solid tumor.](image1.jpg)
+</div>
+
+
+## In line coding
+```{r echo=FALSE}
+ae_info <- adae %>% count(AETERM) %>%
+  arrange(n) %>% slice(0:5)
+```
+Adverse events that occured to more than 5 subjects are <u>  `r ae_info$AETERM` <u>
+
+
+## Dataset {.tabset}
+### interactive
+[Click here 😊](https://rstudio.github.io/DT/extensions.html)
+ 
+```{r echo=FALSE}
+datatable(data.frame(adsl), extensions = 
+            'FixedColumns')
+```
+### static
+```{r echo=FALSE}
+kable(head(adsl))
+```
+
+### Plots
+```{r echo=FALSE,warning=FALSE, message=FALSE}
+adlb <- ex_adlb %>% filter(PARAMCD == "ALT")  # Filter all data for ALT parameter
+plot_ly(data = adlb, x = ~ADY, y = ~AVAL, color = ~USUBJID, type = "scatter", mode = "lines") %>%
+        add_lines() %>%
+        layout(
+          title = "Lab Plot",  # Title of the plot
+          xaxis = list(title = "Time since treatment"),  # X-axis label
+          yaxis = list(title = "ALT"),  # Y-axis label
+          height = 300, width = 800  # Dimensions of the plot
+        )
+```
+
+## loop {.tabset}
+```{r, echo=FALSE, results='asis'}
+for (subject in adsl$USUBJID[1:5]){
+  cat('\n')
+  cat("###", subject, "\n")
+  ae_info = adae %>% filter(USUBJID==subject)
+  cat("#### Adverse events: ", ae_info$AETERM, "\n")
+  cat('\n')
+}
+```
